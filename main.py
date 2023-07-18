@@ -1,16 +1,21 @@
-# This is a sample Python script.
-
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+from dynamodb_vcenter_item import VcenterItem
+from dynamodb_vcenter_item import DatacenterItem
+from dynamodb_vcenter_item import ComputeClusterItem
+from dynamodb_vcenter_item import DatastoreItem
+from dynamodb_vcenter_item import NetworkItem
+from dynamodb_vcenter_item import TemplateItem
 
 
-# Press the green button in the gutter to run the script.
+def test_classes():
+    vc_item = VcenterItem("part_key", "sort_key", "item_label", {"attribute": "value"})
+    dc_item = DatacenterItem("part_key", "sort_key", "item_label", {"attribute": "value"})
+    cc_item = ComputeClusterItem("part_key", "sort_key", "item_label", {"attribute": "value"})
+    ds_item = DatastoreItem("part_key", "sort_key", "item_label", {"attribute": "value"})
+    nw_item = NetworkItem("part_key", "sort_key", "item_label", {"attribute": "value"})
+    tp_item = TemplateItem("part_key", "sort_key", "item_label", {"attribute": "value"})
+
+    for obj in [vc_item,dc_item,cc_item,ds_item,nw_item,tp_item]:
+        print(obj.retrieve_item())
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    test_classes()
