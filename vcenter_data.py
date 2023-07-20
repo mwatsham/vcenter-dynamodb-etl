@@ -68,3 +68,15 @@ class NetworkEntity(VsphereEntity):
         name = entity.get('name')
 
         super().__init__(name, parent_name)
+
+
+class DatastoreEntity(VsphereEntity):
+    def __init__(self, parent_name, entity=None):
+        name = entity.get('name')
+
+        attributes = {
+            'StorageCapacityGB': entity.get('StorageCapacityGB'),
+            'StorageFreeGB': entity.get('StorageFreeGB')
+        }
+
+        super().__init__(name, parent_name, attributes)
