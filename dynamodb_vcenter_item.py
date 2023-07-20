@@ -144,7 +144,7 @@ class ComputeClusterItem(TableItem):
         self.primary_key = {"PK": self.partition_key, "SK": self.sort_key}
         self.secondary_index = {self.secondary_index_prefix + "PK": self.sort_key + '#' + self.partition_key}
 
-        super().__init__(self.primary_key, self.secondary_index, self.type, item_label,attributes)
+        super().__init__(self.primary_key, self.secondary_index, self.type, item_label, attributes)
 
 
 """
@@ -216,7 +216,7 @@ class NetworkItem(TableItem):
         self.primary_key = {"PK": self.partition_key, "SK": self.sort_key}
         self.secondary_index = {self.secondary_index_prefix + "PK": self.sort_key + "#" + self.partition_key}
 
-        super().__init__(self.primary_key, self.secondary_index, self.type, item_label ,attributes)
+        super().__init__(self.primary_key, self.secondary_index, self.type, item_label, attributes)
 
 
 """
