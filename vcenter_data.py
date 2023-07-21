@@ -125,17 +125,20 @@ class VcServiceInstance:
 
     # Need to flatten computer clusters as they could be organised in a nested
     # folder structure. We're only interested in finding out which compute
-    # clusters/Standalone ESXi hosts belong to a particular Datacenter
+    # clusters belong to a particular Datacenter.
+    # NB: We ignore standalone ESXi hosts
     def _process_compute_clusters(self, compute_object):
         computer_cluster_objs = []
 
         for compute_resource in compute_object:
             if hasattr(compute_resource, 'childEntity'):
-                # Check Compute is not empty
+                # Check for empty Compute resource
                 if compute_resource.childEntity:
-                    computer_cluster_objs.append(self._process_compute_clusters(compute_resource.childEntity))
+                    computer_cluster_objs + self._process_compute_clusters(compute_resource.childEntity)
             else:
-                computer_cluster_objs.append(compute_resource)
+                # Ignore standalone ESXi hosts
+                if len(compute_resource.host) > 1:
+                    computer_cluster_objs.append(compute_resource)
 
         return computer_cluster_objs
 
