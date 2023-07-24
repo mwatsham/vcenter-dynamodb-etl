@@ -1,6 +1,6 @@
 import datetime
 from datetime import timezone
-import pyvm_common
+from common import pyvm_common
 
 
 class TreeNode:
@@ -19,7 +19,6 @@ class TreeNode:
         nodes_to_visit = [self]
         while len(nodes_to_visit) > 0:
             current_node = nodes_to_visit.pop()
-            print(current_node.data.__dict__)
             nodes.append(current_node)
             nodes_to_visit += current_node.children
         return nodes
