@@ -1,6 +1,55 @@
 import datetime
 from datetime import timezone
 from common import pyvm_common
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+
+def get_vc_rest_api_content_libraries(lib_name, **kwargs):
+    # Disable SSL warnings
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+    # Set up the REST API endpoint URLs
+    base_url = f'https://{ kwargs.get("vc_fqdn")}/rest'
+    auth_url = f'{base_url}/com/vmware/cis/session'
+    lib_url = f'{base_url}/com/vmware/content/library'
+    lib_item_url = f'{base_url}/com/vmware/content/library/item'
+    verify_ssl = False
+    headers = {'Content-Type': 'application/json',
+               'Accept': 'application/json'}
+
+    # Authenticate to the vSphere REST API
+    session = requests.Session()
+    session.auth = (kwargs.get('vc_username'), kwargs.get('vc_password'))
+    session.post(auth_url, headers=headers, verify=verify_ssl)
+
+    # Retrieve a list of all content libraries
+    response = session.get(lib_url, headers=headers, verify=verify_ssl)
+    response.raise_for_status()
+
+    # Extracted IDs for available Content Libraries
+    content_lib_ids = response.json()['value']
+    libs = []
+
+    # Loop through available Content Library IDs to extract
+    # library items from named Content Library in 'lib_name'
+    for content_lib_id in content_lib_ids:
+        tmp_lib_url = lib_url + f'/id:{content_lib_id}'
+        response = session.get(tmp_lib_url, headers=headers, verify=verify_ssl)
+        lib = response.json()['value']
+        if lib['name'] == lib_name:
+            tmp_lib_items_url = lib_item_url + f'?library_id={lib["id"]}'
+            response = session.get(tmp_lib_items_url, headers=headers, verify=verify_ssl)
+            lib_items = response.json()['value']
+            for item in lib_items:
+                tmp_lib_item_url = lib_item_url + f'/id:{item}'
+                response = session.get(tmp_lib_item_url, headers=headers, verify=verify_ssl)
+                lib_item = response.json()['value']
+                libs.append(lib_item)
+
+    # Logout of the vSphere REST API
+    session.delete(auth_url, verify=verify_ssl)
+
+    return libs
 
 
 class TreeNode:
@@ -22,6 +71,7 @@ class TreeNode:
             nodes.append(current_node)
             nodes_to_visit += current_node.children
         return nodes
+
 
 class VsphereEntity:
     def __init__(self, name: str = "", parent_name: str = "", label: str = "", attributes=None):

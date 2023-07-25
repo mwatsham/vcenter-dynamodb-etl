@@ -3,6 +3,7 @@ from common.dynamodb_vcenter_item import DatacenterItem
 from common.dynamodb_vcenter_item import ComputeClusterItem
 from common.dynamodb_vcenter_item import DatastoreItem
 from common.dynamodb_vcenter_item import NetworkItem
+from common.dynamodb_vcenter_item import TemplateItem
 from common import vcenter_data
 from common import aws_common
 from os import getenv
@@ -27,7 +28,8 @@ def extract_vc_data(**vc_args):
         'vc_name': vc_args.get('vc_name'),
         'vc_username': vc_args.get('vc_username'),
         'vc_password': vc_args.get('vc_password'),
-        'vc_fqdn': vc_args.get('vc_fqdn')
+        'vc_fqdn': vc_args.get('vc_fqdn'),
+        'vc_content_lib': vc_args.get('vc_content_lib')
     }
 
     # Create vCenter service instance object
@@ -39,6 +41,21 @@ def extract_vc_data(**vc_args):
     # Create vCenter data tree root/node
     vc_root = vcenter_data.TreeNode(vc_entity, 'vcenter')
 
+    # Retrieve VM Templates from Content Library
+    vm_templates = vcenter_data.get_vc_rest_api_content_libraries(vc_args.get('vc_content_lib'), **vc_args)
+
+    # Loop through retrieved Templates and add items to vCenter data tree as child items of vCenter node
+    for vm_template in vm_templates:
+        # Create Template data entity
+        tp_entity = vcenter_data.TemplateEntity(vc_entity.name, {'name': vm_template.get('name')})
+
+        # Create Template tree node
+        tp_node = vcenter_data.TreeNode(tp_entity, 'template')
+
+        # Add Template tree node as child of vCenter tree root
+        vc_root.add_child(tp_node)
+
+    # Loop vCenter Datacenters and add items to vCenter data tree as child items of vCenter node
     for datacenter in vc_si_obj.get_datacenters():
         # Create Datacenter data entity
         dc_entity = vcenter_data.DatacenterEntity(vc_entity.name, {'name': datacenter.name})
@@ -92,7 +109,6 @@ def extract_vc_data(**vc_args):
                     nw_node = vcenter_data.TreeNode(nw_entity, 'network')
                     cc_node.add_child(nw_node)
 
-
     # Return data tree
     return vc_root.traverse()
 
@@ -121,6 +137,10 @@ def transform_vc_data(vc_entities):
             dynamodb_items.append(
                 NetworkItem(entity.data.parent_name, entity.data.name, entity.data.label, entity.data.attributes)
             )
+        elif entity.node_type == 'template':
+            dynamodb_items.append(
+                TemplateItem(entity.data.parent_name, entity.data.name, entity.data.label, entity.data.attributes)
+            )
 
     return dynamodb_items
 
@@ -148,6 +168,7 @@ def load_vc_data(db_items, **aws_args):
             # Following line deals with 'TypeError: Float types are not supported. Use Decimal types instead.'
             db_item = json.loads(json.dumps(db_item.retrieve_item()), parse_float=Decimal)
             batch.put_item(Item=db_item)
+
 
 def _parse_args():
     main_parser = ArgumentParser(
@@ -196,6 +217,13 @@ def _parse_args():
         type=str,
         nargs='?',
         default=getenv('VC_PASSWORD')
+    )
+    output_only.add_argument(
+        "vc_content_lib",
+        help="vCenter Content Library name storing VM Templates.",
+        type=str,
+        nargs='?',
+        default=getenv('VC_CONTENT_LIB')
     )
 
     output_load = subparsers.add_parser('load_dynamodb', help='load_dynamodb --help')
@@ -262,6 +290,13 @@ def _parse_args():
         help="AWS DynamoDB table name.",
         default=getenv('AWS_DYNAMODB_TABLE')
     )
+    output_load.add_argument(
+        "vc_content_lib",
+        help="vCenter Content Library name for location of VM Templates.",
+        type=str,
+        nargs='?',
+        default=getenv('VC_CONTENT_LIB')
+    )
 
     return main_parser.parse_args()
 
@@ -279,8 +314,3 @@ if __name__ == '__main__':
         for item in db_items:
             print(item.retrieve_item())
         load_vc_data(db_items, **args)
-
-
-
-    #main()
-
