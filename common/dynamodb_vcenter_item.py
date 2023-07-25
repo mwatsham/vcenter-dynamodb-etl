@@ -91,7 +91,7 @@ Item structure:
     {
         'PK': 'VC#PART_KEY', 
         'SK': 'DC#SORT_KEY', 
-        'GSI2PK': 'DC#SORT_KEY#VC#PART_KEY', 
+        'GSI2PK': 'DC#SORT_KEY', 
         'ItemType': 'datacenter', 
         'Label': 'item_label', 
         'attribute': 'value'
@@ -106,7 +106,7 @@ class DatacenterItem(TableItem):
         self.partition_key = self.partition_key_prefix + str.upper(partition_key)
         self.sort_key = self.sort_key_prefix + str.upper(sort_key)
         self.primary_key = {"PK": self.partition_key, "SK": self.sort_key}
-        self.secondary_index = {self.secondary_index_prefix + "PK": self.sort_key + '#' + self.partition_key}
+        self.secondary_index = {self.secondary_index_prefix + "PK": self.sort_key}
 
         super().__init__(self.primary_key, self.secondary_index, self.type, item_label,attributes)
 
@@ -127,7 +127,7 @@ Item structure:
     {
         'PK': 'DC#PART_KEY', 
         'SK': 'CC#SORT_KEY', 
-        'GSI3PK': 'CC#SORT_KEY#DC#PART_KEY', 
+        'GSI3PK': 'CC#SORT_KEY, 
         'ItemType': 'compute_cluster', 
         'Label': 'item_label', 
         'attribute': 'value'
@@ -142,7 +142,7 @@ class ComputeClusterItem(TableItem):
         self.partition_key = self.partition_key_prefix + str.upper(partition_key)
         self.sort_key = self.sort_key_prefix + str.upper(sort_key)
         self.primary_key = {"PK": self.partition_key, "SK": self.sort_key}
-        self.secondary_index = {self.secondary_index_prefix + "PK": self.sort_key + '#' + self.partition_key}
+        self.secondary_index = {self.secondary_index_prefix + "PK": self.sort_key}
 
         super().__init__(self.primary_key, self.secondary_index, self.type, item_label, attributes)
 
