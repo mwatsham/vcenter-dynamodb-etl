@@ -72,6 +72,23 @@ class TreeNode:
             nodes_to_visit += current_node.children
         return nodes
 
+    def print_tree(self, nodes, level=0):
+        # moves through each node referenced from self downwards
+        nodes_to_visit = nodes
+        while len(nodes_to_visit) > 0:
+            current_node = nodes_to_visit.pop()
+            level_char = ' '*level
+
+            if level == 0:
+                print(f'┌ {current_node.node_type} - {current_node.data.label}')
+            else:
+                print(f'{level_char}└{current_node.node_type} - {current_node.data.label}')
+
+            if len(current_node.children) > 0:
+                level += 1
+                self.print_tree(current_node.children, level)
+                level -= 1
+
 
 class VsphereEntity:
     def __init__(self, name: str = "", parent_name: str = "", label: str = "", attributes=None):

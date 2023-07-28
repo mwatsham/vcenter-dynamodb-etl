@@ -169,6 +169,32 @@ def load_vc_data(db_items, **aws_args):
             db_item = json.loads(json.dumps(db_item.retrieve_item()), parse_float=Decimal)
             batch.put_item(Item=db_item)
 
+def recreate_table(**aws_args):
+    aws_connect_args = {
+        'role_arn': aws_args.get('aws_role_arn'),
+        'access_key_id': aws_args.get('aws_access_key_id'),
+        'secret_access_key': aws_args.get('aws_secret_access_key'),
+        'region': aws_args.get('aws_region')
+    }
+
+    f = open('dynamodb_cf_template.json')
+    dynamodb_spec = json.load(f)
+    dynamodb_spec = dynamodb_spec['Resources']['devShasrvGrpdeployIceInstances']['Properties']
+
+    print(dynamodb_spec)
+    aws_session = aws_common.aws_session(**aws_connect_args)
+
+    # Retrieve DynamoDB Resource
+    dynamodb_resource = aws_session.dynamodb_resource()
+
+    old_table = dynamodb_resource.Table(aws_args.get('dynamodb_table_name'))
+
+    aws_session.delete_dynamodb_table(old_table)
+
+    new_table = aws_session.create_dynamodb_table(dynamodb_resource, dynamodb_spec)
+
+    new_table.wait_until_exists()
+
 
 def _parse_args():
     main_parser = ArgumentParser(
@@ -181,6 +207,14 @@ def _parse_args():
         "--verbose",
         help="Increase output verbosity",
         action="store_true"
+    )
+
+    main_parser.add_argument(
+        "-d",
+        "--delete",
+        help="Delete DynamoDB table prior to data load.",
+        action="store_true",
+        default=False
     )
 
     subparsers = main_parser.add_subparsers(
@@ -308,7 +342,7 @@ if __name__ == '__main__':
         vc_data = extract_vc_data(**args)
         for item in transform_vc_data(vc_data):
             print(item.retrieve_item())
-    elif args['sub_command'] == 'load_dynamodb':
+    elif args['sub_command'] == 'load_dynamodb' and not args['delete']:
         vc_data = extract_vc_data(**args)
         db_items = transform_vc_data(vc_data)
         for item in db_items:
