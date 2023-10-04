@@ -49,7 +49,7 @@ class aws_session:
     def delete_dynamodb_table(self, dynamodb_table):
         try:
             response = dynamodb_table.delete()
-            print("Successfully deleted table.")
+            print("Initiating table delete.")
             # Handle response
         except ClientError as error:
             self._handle_error(error)
@@ -61,7 +61,7 @@ class aws_session:
     def create_dynamodb_table(self, dynamodb_resource, input):
         try:
             response = dynamodb_resource.create_table(**input)
-            print("Successfully created table.")
+            print("Initiating table create.")
             return response
         except ClientError as error:
             self._handle_error(error)

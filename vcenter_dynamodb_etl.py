@@ -177,6 +177,8 @@ def recreate_table(**aws_args):
         'region': aws_args.get('aws_region')
     }
 
+    # Note that the spec file JSON structure is assumed to be that of an export
+    # from the AWS NoSQL Workbench tool which is Cloud Formation based.
     f = open('dynamodb_cf_template.json')
     dynamodb_spec = json.load(f)
     dynamodb_spec = dynamodb_spec['Resources']['devShasrvGrpdeployIceInstances']['Properties']
@@ -191,8 +193,12 @@ def recreate_table(**aws_args):
 
     aws_session.delete_dynamodb_table(old_table)
 
+    print("Waiting for table delete confirmation.")
+    old_table.wait_until_not_exists()
+
     new_table = aws_session.create_dynamodb_table(dynamodb_resource, dynamodb_spec)
 
+    print("Waiting for table create confirmation.")
     new_table.wait_until_exists()
 
 
