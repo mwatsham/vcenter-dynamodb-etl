@@ -348,3 +348,10 @@ if __name__ == '__main__':
         for item in db_items:
             print(item.retrieve_item())
         load_vc_data(db_items, **args)
+    elif args['sub_command'] == 'load_dynamodb' and args['delete']:
+        vc_data = extract_vc_data(**args)
+        db_items = transform_vc_data(vc_data)
+        for item in db_items:
+            print(item.retrieve_item())
+        recreate_table(**args)
+        load_vc_data(db_items, **args)
