@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Resources": {
-    "devShasrvGrpdeployIceInstances": {
+    "IceInstances": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
         "KeySchema": [
@@ -123,7 +123,7 @@
           }
         ],
         "BillingMode": "PAY_PER_REQUEST",
-        "TableName": "dev-shasrv-grpdeploy-ice-instances"
+        "TableName": "ice-instances"
       }
     }
   }

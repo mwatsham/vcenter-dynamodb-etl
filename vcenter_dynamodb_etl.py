@@ -181,8 +181,10 @@ def recreate_table(**aws_args):
     # from the AWS NoSQL Workbench tool which is Cloud Formation based.
     f = open('dynamodb_cf_template.json')
     dynamodb_spec = json.load(f)
-    dynamodb_spec = dynamodb_spec['Resources']['devShasrvGrpdeployIceInstances']['Properties']
-
+    dynamodb_spec = dynamodb_spec['Resources']['IceInstances']['Properties']
+    
+    dynamodb_spec['TableName'] = aws_args.get('dynamodb_table_name')
+    
     print(dynamodb_spec)
     aws_session = aws_common.aws_session(**aws_connect_args)
 
